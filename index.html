@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classroom Management Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a field guide. Sticky chapter list on the left, reading column on the right; each strategy is a card with what it is, a classroom example, and its source. */
+:root{
+  --ink:#16313a;
+  --paper:#f4f7f6;
+  --card:#ffffff;
+  --line:#d3dedb;
+  --muted:#53696f;
+  --accent:#e8a317;
+  --accent-ink:#3a2800;
+  --teal:#1f6f74;
+  --teal-soft:#e2efee;
+  --good:#2f7d4a;
+  --good-soft:#e3f2e7;
+  --warn:#b4541f;
+  --warn-soft:#fbe9df;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --r:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e4eeec; --paper:#0f1c20; --card:#16272c; --line:#2b4147; --muted:#9db3b6;
+    --accent:#f2b63a; --accent-ink:#2a1d00; --teal:#6cc3c4; --teal-soft:#183a3d;
+    --good:#7fd19a; --good-soft:#173826; --warn:#f0996a; --warn-soft:#3d2216;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e4eeec; --paper:#0f1c20; --card:#16272c; --line:#2b4147; --muted:#9db3b6;
+  --accent:#f2b63a; --accent-ink:#2a1d00; --teal:#6cc3c4; --teal-soft:#183a3d;
+  --good:#7fd19a; --good-soft:#173826; --warn:#f0996a; --warn-soft:#3d2216;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.65}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,3vw,2.1rem);font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.25rem;font-weight:700}
+h4{font-size:1.08rem;font-weight:700}
+p{margin:0}
+a{color:var(--teal);text-underline-offset:2px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.muted{color:var(--muted)}
+.prose{max-width:68ch}
+.stack{display:grid;gap:14px}
+
+/* Hero */
+header.hero{padding:52px 0 40px;border-bottom:1px solid var(--line);background:var(--card)}
+.hero-in{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:1.5fr 1fr;gap:40px;align-items:end}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-size:.8rem;font-weight:700;color:var(--teal);margin-bottom:12px}
+.lead{font-size:1.18rem;margin-top:16px;max-width:56ch}
+.hero-note{background:var(--teal-soft);border-radius:var(--r);padding:18px 20px}
+.hero-note h3{font-size:1rem;margin-bottom:8px}
+.hero-note ol{margin:0;padding-left:1.2em;display:grid;gap:4px}
+@media (max-width:860px){.hero-in{grid-template-columns:1fr}}
+
+/* Shell */
+.shell{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+aside.toc{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding:28px 0}
+aside.toc h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px}
+aside.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+aside.toc a{display:flex;gap:10px;text-decoration:none;color:var(--ink);padding:6px 10px;border-radius:8px;font-size:.93rem;line-height:1.3}
+aside.toc a span{font-family:var(--font-display);font-weight:700;color:var(--teal);min-width:20px}
+aside.toc a:hover{background:var(--teal-soft)}
+aside.toc a.on{background:var(--ink);color:var(--paper)}
+aside.toc a.on span{color:var(--accent)}
+@media (max-width:960px){
+  .shell{grid-template-columns:1fr;gap:0}
+  aside.toc{position:static;max-height:none;padding:20px 0 0}
+  aside.toc ol{display:flex;flex-wrap:wrap;gap:6px}
+  aside.toc a{border:1px solid var(--line);background:var(--card)}
+}
+
+main{padding-bottom:40px;min-width:0}
+section.ch{padding:48px 0;border-bottom:1px solid var(--line)}
+section.ch:last-child{border-bottom:0}
+.ch-head{display:flex;gap:14px;align-items:baseline;margin-bottom:12px}
+.ch-num{font-family:var(--font-display);font-weight:800;font-size:.95rem;color:var(--accent-ink);background:var(--accent);padding:2px 10px;border-radius:6px;flex:none;transform:translateY(-4px)}
+.ch-intro{margin-bottom:24px}
+.sub{margin:32px 0 14px}
+
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card h3,.card h4{margin-bottom:8px}
+
+/* Strategy card */
+.strat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:grid;gap:10px;align-content:start}
+.strat .ex{background:var(--paper);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;font-size:.96rem}
+.strat .ex b{font-family:var(--font-display);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);display:block;margin-bottom:2px}
+.src{font-size:.85rem;color:var(--muted)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;background:var(--teal-soft);color:var(--teal);justify-self:start}
+.tag.slide{background:var(--accent);color:var(--accent-ink)}
+
+/* Big five crosswalk */
+.cross{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cross th,.cross td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.cross th{font-family:var(--font-display);font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--paper)}
+.cross td:first-child{font-family:var(--font-display);font-weight:700;white-space:nowrap}
+.tablewrap{overflow-x:auto}
+
+/* Examples table */
+.exnon{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card)}
+.exnon > div{padding:12px 16px;border-top:1px solid var(--line)}
+.exnon .h{font-family:var(--font-display);font-weight:700;border-top:0}
+.exnon .h.yes{background:var(--good-soft);color:var(--good)}
+.exnon .h.no{background:var(--warn-soft);color:var(--warn)}
+.exnon > div:nth-child(odd){border-right:1px solid var(--line)}
+@media (max-width:600px){.exnon{grid-template-columns:1fr}.exnon > div:nth-child(odd){border-right:0}}
+
+/* Steps */
+ol.steps{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+ol.steps li::before{content:counter(s);font-family:var(--font-display);font-weight:800;background:var(--teal-soft);color:var(--teal);border-radius:8px;height:34px;display:grid;place-items:center}
+ul.clean{margin:0;padding-left:1.15em;display:grid;gap:6px}
+
+/* Continuum */
+.continuum{display:grid;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card)}
+.continuum .lvl{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 18px;border-top:1px solid var(--line);position:relative}
+.continuum .lvl:first-child{border-top:0}
+.continuum .lvl::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--lvl)}
+.continuum .lvl h4{font-size:.98rem}
+@media (max-width:640px){.continuum .lvl{grid-template-columns:1fr;gap:4px}}
+
+/* Decision */
+.decide{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.decide .card{border-top:5px solid var(--c)}
+@media (max-width:760px){.decide{grid-template-columns:1fr}}
+
+/* Cycle */
+.cycle{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:16px}
+.cycle div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 8px;text-align:center;font-family:var(--font-display);font-weight:700;font-size:.88rem;position:relative}
+.cycle div small{display:block;font-family:var(--font-body);font-weight:400;color:var(--muted);font-size:.75rem}
+.cycle .hot{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.cycle .mid{border-color:var(--accent)}
+@media (max-width:760px){.cycle{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.callout{background:var(--teal-soft);border-radius:var(--r);padding:16px 20px}
+.callout h4{margin-bottom:6px}
+.quote-note{font-style:italic}
+.starters{display:flex;flex-wrap:wrap;gap:8px}
+.starters span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:.93rem}
+.btn{display:inline-block;text-decoration:none;font-weight:700;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:9px 16px}
+.res{display:grid;gap:10px}
+.res a{display:block;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;text-decoration:none;color:var(--ink)}
+.res a:hover{border-color:var(--teal)}
+.res a b{font-family:var(--font-display);display:block;color:var(--teal)}
+.res a span{font-size:.92rem;color:var(--muted)}
+footer{border-top:1px solid var(--line);background:var(--card);padding:36px 0 56px;font-size:.9rem;color:var(--muted)}
+footer .in{max-width:1180px;margin:0 auto;padding:0 20px}
+footer h3{color:var(--ink);font-size:1rem;margin-bottom:10px}
+footer ul{margin:0;padding-left:1.1em;display:grid;gap:6px}
+
+/* Examples and practice */
+.exgrid .excard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:6px;align-content:start}
+.practice{margin-top:28px;background:var(--teal-soft);border-radius:14px;padding:22px}
+.prhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.prscore{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums;color:var(--teal)}
+.scn{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:10px;align-content:start}
+.scn .q{font-weight:700}
+.opts{display:grid;gap:8px}
+.opt{cursor:pointer;display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;font-size:.95rem;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.opt:hover{border-color:var(--teal)}
+.opt .ol{font-family:var(--font-display);font-weight:800;color:var(--teal);flex:none;width:18px}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:700}
+.opt.ok .ol{color:var(--good)}
+.opt.no{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.opt.no .ol{color:var(--warn)}
+.opt.best{border:2px dashed var(--good)}
+.scn .fb{display:none;padding:10px 12px;border-radius:8px;font-size:.95rem}
+.scn .fb.show{display:block}
+.scn .fb.ok{background:var(--good-soft);color:var(--good)}
+.scn .fb.no{background:var(--warn-soft);color:var(--warn)}
+.scn .fb .hint{display:block;margin-top:4px;font-size:.88rem}
+
+/* Frog Baby */
+.hero-side{display:grid;gap:14px;justify-items:center}
+.hero-in{align-items:center}
+.hero-frog{width:min(190px,50vw);height:auto;filter:drop-shadow(0 10px 18px rgba(0,0,0,.12))}
+.frogtip{display:flex;gap:16px;align-items:center;margin:0 0 24px;max-width:680px}
+.frogtip img{width:104px;height:auto;flex:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.12))}
+.frogtip .bubble{position:relative;background:var(--card);border:2px solid var(--accent);border-radius:16px;padding:12px 16px}
+.frogtip .bubble::before{content:"";position:absolute;left:-10px;top:50%;width:16px;height:16px;background:var(--card);border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:translateY(-50%) rotate(45deg)}
+.frogtip .who{font-family:var(--font-display);font-weight:800;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);display:block}
+.prtitle{display:flex;gap:10px;align-items:center}
+.prfrog{width:54px;height:auto}
+.scn .fb.show{display:flex;gap:10px;align-items:flex-start}
+.fbfrog{width:52px;height:auto;flex:none}
+.foot-frog{display:flex;gap:14px;align-items:center}
+.foot-frog img{width:120px;height:auto}
+@media (max-width:520px){.frogtip img{width:76px}}
+
+/* Growth mindset */
+.gm-video{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.gm-play{width:64px;height:64px;border-radius:14px;background:var(--warn);color:#fff;display:grid;place-items:center}
+.gm-moves .card{display:grid;gap:6px;align-content:start}
+.gm-n{font-family:var(--font-display);font-weight:800;background:var(--accent);color:var(--accent-ink);width:30px;height:30px;border-radius:8px;display:grid;place-items:center}
+.gm-eg{font-size:.92rem;background:var(--paper);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;padding:8px 12px}
+.gm-take{background:var(--teal-soft);border-color:transparent}
+@media (max-width:560px){.gm-video{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-in">
+    <div>
+      <div class="eyebrow">A self-study guide for elementary preservice teachers</div>
+      <h1>Classroom Management and Discipline</h1>
+      <p class="lead">Creating a positive, focused learning environment. This guide gathers research-backed strategies, real classroom examples, and trusted resources you can read on your own and bring to your field placement.</p>
+    </div>
+    <div class="hero-side"><img class="hero-frog" src="img/hero.webp" alt="Frog Baby holding two frogs"><div class="hero-note">
+      <h3>How to read this guide</h3>
+      <ol>
+        <li>Start with the big picture in chapter 1.</li>
+        <li>Chapters 2 to 5 cover prevention: rules, routines, praise, engagement.</li>
+        <li>Chapters 6 to 9 cover responding when things go wrong.</li>
+        <li>Chapters 10 to 12 connect to families, field experience, and further reading.</li>
+        <li>Chapters 2 to 10 end with more examples and practice scenarios where you choose the best response.</li>
+      </ol>
+    </div></div>
+  </div>
+</header>
+
+<div class="shell">
+<aside class="toc" aria-label="Chapters">
+  <h2>Chapters</h2>
+  <ol>
+    <li><a href="#big-picture"><span>1</span>The big picture</a></li>
+    <li><a href="#rules"><span>2</span>Rules and expectations</a></li>
+    <li><a href="#routines"><span>3</span>Routines and procedures</a></li>
+    <li><a href="#praise"><span>4</span>Praise and acknowledgment</a></li>
+    <li><a href="#engagement"><span>5</span>Engagement and growth mindset</a></li>
+    <li><a href="#misbehavior"><span>6</span>Responding to misbehavior</a></li>
+    <li><a href="#respect"><span>7</span>Disrespectful behavior</a></li>
+    <li><a href="#escalation"><span>8</span>When behavior escalates</a></li>
+    <li><a href="#restorative"><span>9</span>Restorative practices</a></li>
+    <li><a href="#families"><span>10</span>Working with families</a></li>
+    <li><a href="#field"><span>11</span>From learning to practice</a></li>
+    <li><a href="#resources"><span>12</span>Questions and resources</a></li>
+  </ol>
+</aside>
+
+<main>
+
+<!-- 1 -->
+<section class="ch" id="big-picture">
+  <div class="ch-head"><span class="ch-num">1</span><h2>The big picture</h2></div>
+  <div class="frogtip"><img src="img/reading.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Most classroom management happens before anything goes wrong.</p></div>
+  <div class="ch-intro prose stack">
+    <p>Classroom management is the set of things a teacher does to create a positive, focused place to learn. Most of it happens <b>before</b> anything goes wrong: clear expectations, predictable routines, warm relationships, and engaging lessons. Discipline, meaning how you respond to misbehavior, is only one part of the picture.</p>
+    <p>Two widely used research summaries point to the same core practices. The National Council on Teacher Quality (NCTQ) calls them the <b>Big Five</b>: rules, routines, praise, misbehavior, and engagement. A systematic review by Simonsen and colleagues (2008) identified five critical features of evidence-based classroom management. The table shows how they line up.</p>
+  </div>
+  <div class="tablewrap">
+    <table class="cross">
+      <thead><tr><th>NCTQ Big Five</th><th>Simonsen et al. (2008) critical feature</th><th>In this guide</th></tr></thead>
+      <tbody>
+        <tr><td>Rules</td><td>Post, teach, review, monitor, and reinforce a small number of positively stated expectations</td><td><a href="#rules">Chapter 2</a></td></tr>
+        <tr><td>Routines</td><td>Maximize structure in your classroom</td><td><a href="#routines">Chapter 3</a></td></tr>
+        <tr><td>Praise</td><td>Use a continuum of strategies to acknowledge appropriate behavior</td><td><a href="#praise">Chapter 4</a></td></tr>
+        <tr><td>Engagement</td><td>Actively engage students in observable ways</td><td><a href="#engagement">Chapter 5</a></td></tr>
+        <tr><td>Misbehavior</td><td>Use a continuum of strategies to respond to inappropriate behavior</td><td><a href="#misbehavior">Chapters 6 to 9</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout" style="margin-top:20px">
+    <h4>Why practice matters</h4>
+    <p class="prose">You need management strategies most in high-stress moments, such as when a student is defiant or the room has lost focus. Reading about a strategy is not enough. NCTQ recommends that teacher candidates practice strategies repeatedly, through role-play and in real classrooms, so that in their own classroom they can respond almost by instinct.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="ch" id="rules">
+  <div class="ch-head"><span class="ch-num">2</span><h2>Rules and expectations</h2></div>
+  <div class="frogtip"><img src="img/pointing.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Keep rules few and positive, and teach them like any other lesson.</p></div>
+  <p class="ch-intro prose">Rules tell students what success looks like. Effective rules are few (three to five), stated in positive terms, taught like any other lesson, and referred to all year.</p>
+
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag slide">From the course</span>
+      <h4>Let students help establish the rules</h4>
+      <p>Build the rules with your class in the first days of school. When students help write them, they understand the reasons and feel ownership. In the Responsive Classroom approach, students later connect consequences to the rules they created, which helps them see consequences as a way to learn and make amends.</p>
+      <div class="ex"><b>Example</b>Second graders share their hopes for the year. The teacher asks, "What rules will help all of us reach our hopes?" The class groups ideas into three rules and everyone signs the poster.</div>
+      <p class="src">Source: course slides; <a href="https://www.responsiveclassroom.org/case-studies/douglas-elementary" target="_blank" rel="noopener">Responsive Classroom</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag slide">From the course</span>
+      <h4>Model the ideal behavior and document the rules</h4>
+      <p>Show what each rule looks and sounds like, then post the rules where everyone can see them. Rules are typically written down, reinforced verbally, and modeled by teachers and students during the first weeks, then applied consistently all year.</p>
+      <div class="ex"><b>Example</b>For "Be respectful," the teacher acts out listening to a speaker (eyes on the speaker, quiet hands) and then a non-example, and students say what was different.</div>
+      <p class="src">Source: course slides; <a href="https://georgiasouthern.libguides.com/keystoteachingsuccess/rulesandroutines_standard7" target="_blank" rel="noopener">Georgia Southern University Libraries</a></p>
+    </article>
+  </div>
+
+  <h3 class="sub">Write rules in positive terms</h3>
+  <p class="prose" style="margin-bottom:14px">A positively stated rule tells students what to do instead of what to stop doing. It gives you something specific to praise.</p>
+  <div class="exnon">
+    <div class="h yes">Positively stated</div><div class="h no">Negatively stated</div>
+    <div>Walk inside our classroom.</div><div>No running.</div>
+    <div>Raise your hand and wait to be called on.</div><div>Don't shout out.</div>
+    <div>Keep hands, feet, and objects to yourself.</div><div>No hitting or pushing.</div>
+    <div>Take care of our materials.</div><div>Don't break things.</div>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <article class="strat">
+      <span class="tag slide">From the course</span>
+      <h4>Write group contracts</h4>
+      <p>For group work, have each group agree in writing on roles and how they will work together. A contract gives you and the group something concrete to come back to when problems arise.</p>
+      <div class="ex"><b>Example</b>A fourth-grade science group lists roles (materials manager, recorder, reporter, timekeeper) and two agreements: "Everyone shares one idea" and "We disagree kindly."</div>
+      <p class="src">Source: course slides</p>
+    </article>
+    <article class="strat">
+      <span class="tag slide">From the course</span>
+      <h4>Set rules at the start and keep expectations consistent</h4>
+      <p>Teach expectations before problems happen, not after. Then respond to the same behavior the same way every day. Consistency is what makes rules believable.</p>
+      <div class="ex"><b>Example</b>On day one, the teacher introduces one rule at a time across the first week, with a short practice and an anchor chart for each.</div>
+      <p class="src">Source: course slides; <a href="https://mrslearningbee.com/learn/blog/classroom-routines-and-procedures-examples" target="_blank" rel="noopener">Mrs Learning Bee</a></p>
+    </article>
+  </div>
+  <div class="extra" data-ch="rules"></div>
+</section>
+
+<!-- 3 -->
+<section class="ch" id="routines">
+  <div class="ch-head"><span class="ch-num">3</span><h2>Routines and procedures</h2></div>
+  <div class="frogtip"><img src="img/walking.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Don't just tell routines. Model them, practice them, and praise them.</p></div>
+  <div class="ch-intro prose stack">
+    <p>Routines are the predictable "how we do things here" of your classroom: how to come in, get materials, ask for help, line up, and go home. A first-grade teacher with 35 years of experience points out that most management problems are not about students trying to misbehave. They happen when routines are unclear.</p>
+    <p>You do not need to teach every routine on the first day. Start with the most important ones and keep adding them over the first few weeks.</p>
+  </div>
+
+  <h3 class="sub">Routines to plan before the first day</h3>
+  <div class="grid g3">
+    <div class="card"><h4>Start of day</h4><ul class="clean"><li>Entering and unpacking</li><li>Morning work</li><li>Attendance and lunch count</li><li>Morning meeting</li></ul></div>
+    <div class="card"><h4>During lessons</h4><ul class="clean"><li>Attention signal</li><li>Asking for help</li><li>Getting and returning materials</li><li>Turning in work</li><li>What to do when finished early</li></ul></div>
+    <div class="card"><h4>Moving and leaving</h4><ul class="clean"><li>Transitions between activities</li><li>Lining up and hallway walking</li><li>Bathroom, water, tissues</li><li>Cleaning up and dismissal</li></ul></div>
+  </div>
+  <p class="src" style="margin-top:10px">Lists adapted from <a href="https://www.weareteachers.com/classroom-procedures-save-sanity/" target="_blank" rel="noopener">WeAreTeachers</a> and <a href="https://firstieland.com/first-grade-classroom-routines-and-procedures/" target="_blank" rel="noopener">Firstieland</a>.</p>
+
+  <h3 class="sub">How to teach a routine: Interactive Modeling</h3>
+  <p class="prose" style="margin-bottom:14px">Telling students directions over and over rarely works. Interactive Modeling, a Responsive Classroom practice, shows students exactly what to do and builds in practice and feedback. The elementary steps are:</p>
+  <div class="grid g2">
+    <div class="card">
+      <ol class="steps">
+        <li><span>Say what you will model and why.</span></li>
+        <li><span>Model the behavior.</span></li>
+        <li><span>Ask students what they noticed.</span></li>
+        <li><span>Invite one or more students to model.</span></li>
+        <li><span>Ask students what they noticed.</span></li>
+        <li><span>Have everyone practice.</span></li>
+        <li><span>Give feedback that names what students did well and redirects clearly when needed.</span></li>
+      </ol>
+      <p class="src" style="margin-top:12px">Source: <a href="https://www.responsiveclassroom.org/shared-practices/interactive-modeling/" target="_blank" rel="noopener">Responsive Classroom, Interactive Modeling</a></p>
+    </div>
+    <div class="strat">
+      <span class="tag">Example script</span>
+      <h4>Walking in line</h4>
+      <div class="ex"><b>Step 1</b>"When we walk in line, we want to get where we're going safely and quietly so other classes can keep learning. Watch what I do."</div>
+      <div class="ex"><b>Steps 2 and 3</b>The teacher walks a short path, eyes forward, hands at sides. "What did you notice?" Students: "You didn't touch the wall." "You stayed behind the person in front."</div>
+      <div class="ex"><b>Steps 4 to 7</b>Two students model, the class names what they saw, then the whole class practices the walk to the door and back. "You kept a space between you and the next person. That's exactly how we keep each other safe."</div>
+      <p class="src">Adapted from a <a href="https://www.responsiveclassroom.org/?p=12881" target="_blank" rel="noopener">Responsive Classroom example</a></p>
+    </div>
+  </div>
+
+  <h3 class="sub">More routine strategies</h3>
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag">Research-based</span>
+      <h4>Precorrection</h4>
+      <p>Figure out when problems tend to happen (transitions, lining up, coming in from recess) and give a short reminder of the expectation just before that moment.</p>
+      <div class="ex"><b>Example</b>Before recess ends: "When you come back in, hang up your coat, get your reading book, and start reading at your seat. Show me with your fingers how many steps that is."</div>
+      <p class="src">Source: <a href="https://iris.peabody.vanderbilt.edu/module/bi2-elem/cresource/q1/p03" target="_blank" rel="noopener">IRIS Center, Precorrection</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag slide">From the course</span>
+      <h4>Have set tasks for early finishers</h4>
+      <p>The gap after a student finishes is where off-task behavior often starts. Post a short menu of meaningful options and teach it like any routine. Offering different kinds of free study time gives students choice inside the structure.</p>
+      <div class="ex"><b>Example</b>A "Done? Choose one" chart: read your book, finish your word work, write in your journal, or work on the class math challenge.</div>
+      <p class="src">Source: course slides</p>
+    </article>
+    <article class="strat">
+      <span class="tag slide">From the course</span>
+      <h4>Set goals at the beginning of class</h4>
+      <p>Post and say what students will learn or do today. Students who know what success looks like settle in faster.</p>
+      <div class="ex"><b>Example</b>"Today we are learning to find the main idea. By the end, you'll be able to tell your partner the main idea of one paragraph in a single sentence."</div>
+      <p class="src">Source: course slides</p>
+    </article>
+    <article class="strat">
+      <span class="tag">Classroom tip</span>
+      <h4>Use hand signals for common needs</h4>
+      <p>Silent signals let students meet routine needs without interrupting the lesson. Teach each signal and post a chart.</p>
+      <div class="ex"><b>Example</b>One finger for a tissue, crossed fingers for the restroom, a fist for water. The teacher nods or shakes her head without stopping.</div>
+      <p class="src">Source: <a href="https://www.weareteachers.com/classroom-procedures-save-sanity/" target="_blank" rel="noopener">WeAreTeachers</a>; <a href="https://www.edutopia.org/blog/hand-signals-bring-learning-to-life-ellie-cowen" target="_blank" rel="noopener">Edutopia</a></p>
+    </article>
+  </div>
+  <div class="extra" data-ch="routines"></div>
+</section>
+
+<!-- 4 -->
+<section class="ch" id="praise">
+  <div class="ch-head"><span class="ch-num">4</span><h2>Praise and acknowledgment</h2></div>
+  <div class="frogtip"><img src="img/clapping.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Name the student, name the behavior, and connect it to the expectation.</p></div>
+  <div class="ch-intro prose stack">
+    <p>"Catch students being good." When students are recognized for following expectations, they tend to keep doing it, and classmates follow the rules so they get positive attention too. But praise is harder to use well than it looks. NCTQ notes that praise given for no reason, for example only to boost self-esteem, can actually lower motivation.</p>
+  </div>
+
+  <div class="grid g3">
+    <div class="card"><span class="tag">Contingent</span><h4 style="margin-top:10px">Earned</h4><p>Praise follows the behavior you want to see. It responds to something the student actually did.</p></div>
+    <div class="card"><span class="tag">Specific</span><h4 style="margin-top:10px">Names the behavior</h4><p>The student knows exactly what earned the praise.</p></div>
+    <div class="card"><span class="tag">Contextualized</span><h4 style="margin-top:10px">Fits the student</h4><p>Use praise sparingly for things a student would do anyway. Save emphasis for what is new or hard.</p></div>
+  </div>
+  <p class="src" style="margin-top:10px">Source: NCTQ, Promising Practices in Classroom Management Training</p>
+
+  <h3 class="sub">Behavior-specific praise in three steps</h3>
+  <div class="grid g2">
+    <div class="card">
+      <ol class="steps">
+        <li><span><b>Name the student</b> (or group).</span></li>
+        <li><span><b>Describe the positive behavior</b> you saw.</span></li>
+        <li><span><b>Connect it to a class expectation.</b></span></li>
+      </ol>
+      <p style="margin-top:14px">Aim for about four praise statements for every correction, roughly six behavior-specific praise statements every 15 minutes.</p>
+      <p class="src" style="margin-top:10px">Sources: <a href="https://www.washoeschools.net/cms/lib/NV01912265/Centricity/Domain/202/PBIS%2020-21/123%20Behavior%20Specific%20Praise.pdf" target="_blank" rel="noopener">Washoe County School District</a>; <a href="https://vkc.vumc.org/assets/files/resources/psibehaviorspecpraise.pdf" target="_blank" rel="noopener">Tennessee Behavior Supports Project, Vanderbilt</a></p>
+    </div>
+    <div class="exnon" style="align-self:start">
+      <div class="h yes">Behavior-specific</div><div class="h no">General</div>
+      <div>"Jordan, you took your seat quickly and got your notebook out. Thank you."</div><div>"Good job!"</div>
+      <div>"Table 3, you shared the glue sticks without being asked. That's being a good teammate."</div><div>"Nice, everyone."</div>
+      <div>"Maya, you tried a new strategy when the first one didn't work. That's persistence."</div><div>"You're so smart."</div>
+      <div>"Thank you for walking in the hall to keep everyone safe."</div><div>"Thank you, Daphne."</div>
+    </div>
+  </div>
+
+  <p class="src" style="margin-top:10px">Praising strategies instead of intelligence also builds a growth mindset. See <a href="#growth-mindset">Growth mindset: Carol Dweck</a> in chapter 5.</p>
+  <div class="grid g2" style="margin-top:16px">
+    <article class="strat">
+      <span class="tag">Age matters</span>
+      <h4>Public or private praise?</h4>
+      <p>Younger elementary students often respond well to enthusiastic praise in front of the class. Older elementary students may prefer quieter praise, such as a comment at their desk or a sticky note. When you can, learn each student's preference.</p>
+      <p class="src">Sources: <a href="https://iris.peabody.vanderbilt.edu/?p=1085689" target="_blank" rel="noopener">IRIS Center</a>; Wright (2012), via <a href="https://www.gadoe.org/Curriculum-Instruction-and-Assessment/Special-Education-Services/Documents/PBIS/2016-17/PBIS%20in%20the%20Classroom%202/wright_using_praise_in_the_classroom_April_2012.pdf" target="_blank" rel="noopener">Georgia DOE</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag">Teacher language</span>
+      <h4>Reinforcing language starters</h4>
+      <p>Responsive Classroom calls this reinforcing language: naming concrete, specific behaviors so students build on their strengths. Try these openers:</p>
+      <div class="starters"><span>I noticed...</span><span>I see...</span><span>You followed our rule ___ by...</span><span>Did you notice...</span></div>
+      <p class="src">Source: <a href="https://www.responsiveclassroom.org/wp-content/uploads/2017/10/Reinforcing-Redirecting-Reminding.pdf" target="_blank" rel="noopener">Responsive Classroom, Reinforcing, Reminding, Redirecting</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag">Research-based</span>
+      <h4>Positive greetings at the door</h4>
+      <p>Greet each student by name as they enter, add a positive word, and remind them of the first task. In a randomized study of middle school classrooms, this raised academic engagement by about 20 percentage points and lowered disruptive behavior by about 9 points. Teachers found it easy to do. Smaller studies in elementary settings point the same way.</p>
+      <div class="ex"><b>Example</b>"Good morning, Luis! I like how you came in ready. Grab your journal and start the question on the board."</div>
+      <p class="src">Source: Cook, Fiat, &amp; Larson (2018), <a href="https://experts.umn.edu/en/publications/positive-greetings-at-the-door-evaluation-of-a-low-cost-high-yiel/" target="_blank" rel="noopener">University of Minnesota</a>; <a href="https://aquila.usm.edu/masters_theses/1015" target="_blank" rel="noopener">Lawson (2023)</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag slide">From the course</span>
+      <h4>Other ways to acknowledge success</h4>
+      <ul class="clean">
+        <li><b>Tangible rewards:</b> points, stickers, or privileges tied to clear, earned behavior.</li>
+        <li><b>Celebrations:</b> mark class milestones together, such as a short party when the class reaches a goal.</li>
+        <li><b>Positive calls and emails home:</b> see <a href="#families">chapter 10</a>.</li>
+        <li><b>Nonverbal praise:</b> a thumbs up, a nod, or a smile.</li>
+      </ul>
+      <p class="src">Source: course slides; <a href="https://sites.google.com/mausd.org/mausdstudentsupport/responsive-discipline/at-school" target="_blank" rel="noopener">MAUSD Responsive Discipline</a></p>
+    </article>
+  </div>
+  <div class="callout" style="margin-top:16px">
+    <h4>Try it in your placement</h4>
+    <p class="prose">Teacher candidates at Hunter College watch a video of their own teaching and count positive and negative statements to see whether the positives come out ahead. You can do the same with any recorded lesson.</p>
+  </div>
+  <div class="extra" data-ch="praise"></div>
+</section>
+
+<!-- 5 -->
+<section class="ch" id="engagement">
+  <div class="ch-head"><span class="ch-num">5</span><h2>Engagement and growth mindset</h2></div>
+  <div class="frogtip"><img src="img/magnifier.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Busy learners have less time for trouble. Give everyone a way to respond.</p></div>
+  <p class="ch-intro prose">Students who are busy learning have less room for off-task behavior. The course slides name four foundations: be excited about the learning yourself, use interesting questions or scenarios to guide the unit, know what interests your students, and vary your approach.</p>
+
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag">Research-based</span>
+      <h4>Opportunities to respond (OTR)</h4>
+      <p>Give students many chances to answer, about 3 to 5 per minute during practice, and let everyone respond at once instead of one student at a time. Frequent responding keeps students on task across grade levels.</p>
+      <div class="ex"><b>Example</b>During a phonics review: "Everyone, what sound does 'sh' make? Say it on three." Then: "Thumbs up if 'ship' has the 'sh' sound, thumbs down if not." Then whiteboards: "Write a word that starts with 'sh.'"</div>
+      <p class="src">Source: <a href="https://iris.peabody.vanderbilt.edu/module/bi2-sec/cresource/q1/p06/" target="_blank" rel="noopener">IRIS Center, Opportunities to Respond</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag">Research-based</span>
+      <h4>Active supervision</h4>
+      <p>Move around the room, scan, and interact with students, especially during independent work and transitions. Being close to students prevents many small behaviors before they start.</p>
+      <div class="ex"><b>Example</b>During partner reading, the teacher circulates in a loop, crouches by pairs to listen for 20 seconds, gives a quick specific comment, and glances up to scan the room before moving on.</div>
+      <p class="src">Source: <a href="https://iris.peabody.vanderbilt.edu/module/bi2-sec/cresource/q1/p04/" target="_blank" rel="noopener">IRIS Center, Active Supervision</a>; <a href="https://louisville.edu/education/abri/primarylevel/strategy/supervision" target="_blank" rel="noopener">University of Louisville ABRI videos</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag">Research-based</span>
+      <h4>Choice making</h4>
+      <p>Offer structured choices about how, where, or in what order students complete a task. Choice is especially helpful for students who tend to avoid work they don't enjoy, and the course slides also list it as a way to keep disciplined students from shutting down.</p>
+      <div class="ex"><b>Example</b>"You can do the even problems or the odd problems." "You can read at your desk, on the rug, or at the back table."</div>
+      <p class="src">Source: <a href="https://iris.peabody.vanderbilt.edu/module/bi2-elem/cresource/q1/p07/" target="_blank" rel="noopener">IRIS Center, Choice Making</a>; course slides</p>
+    </article>
+    <article class="strat">
+      <span class="tag">Research-based</span>
+      <h4>High-probability requests</h4>
+      <p>Before a task a student usually resists, give three to five quick, easy requests the student almost always follows. The momentum makes the harder request easier to accept.</p>
+      <div class="ex"><b>Example</b>"Can you hand me that marker? Thanks. Write your name at the top. Great. Circle problem one. Now read problem one to me."</div>
+      <p class="src">Source: <a href="https://iris.peabody.vanderbilt.edu/?p=1129736" target="_blank" rel="noopener">IRIS Center, High-Probability Requests</a></p>
+    </article>
+  </div>
+
+  <h3 class="sub">More engagement ideas from the course</h3>
+  <div class="grid g3">
+    <div class="card"><h4>Interview students</h4><p>Learn their interests early with a short survey or conversation, then use them in examples and choices.</p></div>
+    <div class="card"><h4>Build excitement for lessons</h4><p>Tease what is coming next and share your own enthusiasm.</p></div>
+    <div class="card"><h4>Assign open-ended projects</h4><p>Tasks with many possible answers invite more students in.</p></div>
+    <div class="card"><h4>Do not grade formative checks</h4><p>Low-stakes practice lowers the risk of trying and making mistakes.</p></div>
+    <div class="card"><h4>Consider peer teaching</h4><p>Explaining to a classmate deepens learning for both students.</p></div>
+    <div class="card"><h4>Gamify personal learning plans</h4><p>Levels, badges, and goals make individual progress visible.</p></div>
+    <div class="card"><h4>Use adaptive ed tech</h4><p>Tools that adjust to each student keep work at the right challenge level.</p></div>
+    <div class="card"><h4>Encourage initiative</h4><p>Praise effort and strategy so students build a growth mindset and take on challenges. <a href="#growth-mindset">See growth mindset below.</a></p></div>
+    <div class="card"><h4>Remove distractions</h4><p>Arrange the room so tempting objects and high-traffic areas don't pull attention away.</p></div>
+  </div>
+  <div id="growth-mindset" class="gm">
+    <h3 class="sub">Growth mindset: Carol Dweck</h3>
+    <div class="gm-video">
+      <div class="gm-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></div>
+      <div>
+        <span class="tag slide">Course video</span>
+        <h4 style="margin:8px 0 6px">Developing a Growth Mindset with Carol Dweck</h4>
+        <p class="prose">Psychologist Carol Dweck explains that students' beliefs about their abilities shape how they approach challenges, respond to mistakes, and keep going. A growth mindset is the belief that intelligence and abilities can grow through learning, good strategies, effort, and support.</p>
+        <a class="btn" style="margin-top:12px" href="https://youtu.be/hiiEeMN7vbQ" target="_blank" rel="noopener">Watch the video on YouTube</a>
+      </div>
+    </div>
+
+    <h4 style="margin:24px 0 10px">Fixed mindset vs. growth mindset</h4>
+    <div class="exnon">
+      <div class="h no">Fixed mindset</div><div class="h yes">Growth mindset</div>
+      <div>Intelligence is fixed.</div><div>Intelligence can develop.</div>
+      <div>Avoids difficult tasks.</div><div>Embraces challenges.</div>
+      <div>Sees mistakes as failures.</div><div>Sees mistakes as chances to learn.</div>
+      <div>Focuses on proving ability.</div><div>Focuses on improving ability.</div>
+      <div>May give up after setbacks.</div><div>Tries new strategies and persists.</div>
+    </div>
+    <p class="src" style="margin-top:8px">In Dweck's research, some children welcomed difficult problems, while others took difficulty as proof that they were not smart.</p>
+
+    <div class="grid g2" style="margin-top:20px">
+      <article class="strat">
+        <span class="tag">The power of "yet"</span>
+        <h4>Replace failure with "not yet"</h4>
+        <p>Adding one word turns a judgment about ability into a step in an ongoing process.</p>
+        <div class="ex"><b>Student says</b>"I can't solve this problem."</div>
+        <div class="ex"><b>Reframe</b>"I can't solve this problem <i>yet</i>."</div>
+        <div class="ex"><b>Student says</b>"I'm not good at math."</div>
+        <div class="ex"><b>Reframe</b>"I haven't mastered this skill <i>yet</i>."</div>
+      </article>
+      <article class="strat">
+        <span class="tag">Feedback</span>
+        <h4>Praise the learning process, not intelligence</h4>
+        <p>Recognize students' strategies, focus, persistence, and improvement. This connects directly to behavior-specific praise in <a href="#praise">chapter 4</a>.</p>
+        <div class="exnon" style="font-size:.93rem">
+          <div class="h no">Instead of</div><div class="h yes">Try</div>
+          <div>"You're so smart!"</div><div>"You used an effective strategy."</div>
+          <div>"You're a natural at math."</div><div>"Your practice helped you improve."</div>
+          <div>"Great job getting everything right!"</div><div>"I noticed how you checked and revised your work."</div>
+        </div>
+      </article>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h4>Learning from mistakes</h4>
+      <p class="prose">Dweck describes research suggesting that students with a growth mindset pay closer attention to their errors and work harder to correct them. Some programs teach students that taking on challenging work strengthens connections in the brain. The video also shares examples of teachers, including teachers in historically underserved communities, who built growth-mindset classrooms and reported large gains in achievement.</p>
+    </div>
+
+    <h4 style="margin:24px 0 10px">Five things teachers can do</h4>
+    <div class="grid g3 gm-moves">
+      <div class="card"><span class="gm-n">1</span><h4>Normalize mistakes</h4><p>Treat errors as information for learning.</p><p class="gm-eg">"Great mistake! What does it tell us about where to look next?"</p></div>
+      <div class="card"><span class="gm-n">2</span><h4>Give process-focused feedback</h4><p>Name strategies, progress, and thoughtful effort.</p><p class="gm-eg">"You drew a model before solving. That helped you see the problem."</p></div>
+      <div class="card"><span class="gm-n">3</span><h4>Offer productive challenges</h4><p>Let students work just beyond their level, with support.</p><p class="gm-eg">A "challenge problem" on the board with hint cards students can use.</p></div>
+      <div class="card"><span class="gm-n">4</span><h4>Use "not yet" language</h4><p>Show that today's performance does not set the limit.</p><p class="gm-eg">A "Not yet" stamp in place of an X on practice work.</p></div>
+      <div class="card"><span class="gm-n">5</span><h4>Value improvement</h4><p>Recognize progress, not just grades.</p><p class="gm-eg">Students graph their weekly fluency scores and set a next goal.</p></div>
+      <div class="card gm-take"><h4>Big takeaway</h4><p>Growth mindset is not just telling students to work harder. It means creating a classroom where students get meaningful feedback, use effective strategies, take on challenges, and see that they can improve.</p></div>
+    </div>
+
+    <div class="frogtip" style="margin-top:20px"><img src="img/watering.webp" alt="Frog Baby watering a sprout"><p class="bubble"><span class="who">Think about it</span>A 2nd grader says, "I'm just not good at reading." What would you say back? How might your feedback accidentally encourage a fixed mindset?</p></div>
+    <p class="src">Summary of the video "Developing a Growth Mindset with Carol Dweck." Classroom examples in the "Five things" cards illustrate each idea.</p>
+  </div>
+  <div class="extra" data-ch="engagement"></div>
+</section>
+
+<!-- 6 -->
+<section class="ch" id="misbehavior">
+  <div class="ch-head"><span class="ch-num">6</span><h2>Responding to misbehavior</h2></div>
+  <div class="frogtip"><img src="img/pouting.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Start with the smallest response that works. Keep it calm and brief.</p></div>
+  <div class="ch-intro prose stack">
+    <p>Even with great prevention, students will make mistakes with behavior, just as they do with reading or math. Treat a behavior error like an academic error: correct it calmly, then teach and practice the right way.</p>
+    <p>PBIS recommends a <b>continuum</b>: start with the least intrusive response that will work, and move up only if needed. Whatever you do, keep it <b>calm, consistent, brief, immediate, and respectful</b>.</p>
+  </div>
+
+  <h3 class="sub">The continuum, from least to most intrusive</h3>
+  <div class="continuum">
+    <div class="lvl" style="--lvl:var(--good)"><h4>Planned ignoring</h4><p>For minor behavior that seeks attention and doesn't disrupt others, keep teaching without reacting. Pair it with praise the moment the student does the right thing.</p></div>
+    <div class="lvl" style="--lvl:var(--good)"><h4>Proximity</h4><p>Move closer to the student while you keep teaching. Your presence alone often redirects.</p></div>
+    <div class="lvl" style="--lvl:var(--good)"><h4>Nonverbal cue</h4><p>Eye contact, "the look," a hand signal, or a tap on the desk. It signals you noticed without calling anyone out in front of the class.</p></div>
+    <div class="lvl" style="--lvl:var(--accent)"><h4>Praise others nearby</h4><p>Praise a nearby student who is meeting the expectation: "Kai has his book open to page 12." It reminds everyone of the expectation.</p></div>
+    <div class="lvl" style="--lvl:var(--accent)"><h4>Redirect</h4><p>Briefly restate the expected behavior: "Daphne, markers are for writing on paper."</p></div>
+    <div class="lvl" style="--lvl:var(--accent)"><h4>Specific error correction</h4><p>Quietly name the behavior to stop and the behavior to do instead, then move on.</p></div>
+    <div class="lvl" style="--lvl:var(--warn)"><h4>Reteach and give a choice</h4><p>Show and practice the expectation again. Offer two acceptable options.</p></div>
+    <div class="lvl" style="--lvl:var(--warn)"><h4>Conference</h4><p>Privately describe the problem and the alternative, explain why the alternative is better, practice, and give feedback.</p></div>
+    <div class="lvl" style="--lvl:var(--warn)"><h4>Logical consequence</h4><p>A response connected to the behavior that helps the student fix it and learn (see below).</p></div>
+  </div>
+  <p class="src" style="margin-top:10px">Sources: <a href="https://www.marshall.edu/bmhtac/files/2025/06/Snapshot-5-Continuum-of-Responses-to-Inappropriate-Behavior.pdf" target="_blank" rel="noopener">Marshall University, Continuum of Responses</a>; <a href="https://www.gadoe.org/Curriculum-Instruction-and-Assessment/Special-Education-Services/Documents/PBIS/2017-18/PBIS%20Chat%20Docs/CM%20Snapshot%20-%20Error%20Correction.pdf" target="_blank" rel="noopener">Georgia DOE, Error Correction</a>; <a href="https://www.edutopia.org/blog/new-teachers-how-develop-look-rebecca-alber" target="_blank" rel="noopener">Edutopia, How to Develop "The Look"</a>; <a href="https://files.eric.ed.gov/fulltext/ED619696.pdf" target="_blank" rel="noopener">Center on PBIS, Supporting and Responding to Behavior</a></p>
+
+  <h3 class="sub">When do you ignore, and when do you address?</h3>
+  <p class="prose" style="margin-bottom:14px">There is no single rule, but a few questions help you decide quickly.</p>
+  <div class="decide">
+    <div class="card" style="--c:var(--good)">
+      <h4>Usually fine to let go or use a quiet cue</h4>
+      <ul class="clean">
+        <li>The behavior is minor and brief (pencil tapping, a sigh, a short whisper).</li>
+        <li>It is not stopping the student or others from learning.</li>
+        <li>No one is unsafe or hurt.</li>
+        <li>Reacting would give attention the student is seeking or interrupt the whole class.</li>
+      </ul>
+    </div>
+    <div class="card" style="--c:var(--warn)">
+      <h4>Address it, promptly and privately if possible</h4>
+      <ul class="clean">
+        <li>Anyone's safety is at risk.</li>
+        <li>The behavior hurts or targets another person, such as an unkind comment about a classmate.</li>
+        <li>It is disrupting other students' learning.</li>
+        <li>It keeps happening or is getting bigger after quieter responses.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="sub">Reminding and redirecting language</h3>
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag">Reminding</span>
+      <h4>Before or just as behavior slips</h4>
+      <p>Brief, calm prompts that help students remember the expectation themselves. They work best once the behavior has been taught and practiced.</p>
+      <div class="ex"><b>Examples</b>"Show me what you do to treat others with respect." "Remember what we do before we start independent work."</div>
+    </article>
+    <article class="strat">
+      <span class="tag">Redirecting</span>
+      <h4>When behavior is off track</h4>
+      <p>A clear, brief, non-negotiable statement that names the desired behavior. Use a matter-of-fact tone and neutral body language, and phrase it as a statement, not a question.</p>
+      <div class="ex"><b>Examples</b>"Jed, walk." "Markers are for drawing on paper." "Put the ball in the bin and come to the rug."</div>
+    </article>
+  </div>
+  <p class="src" style="margin-top:10px">Sources: <a href="https://www.responsiveclassroom.org/reinforcing-reminding-and-redirecting/" target="_blank" rel="noopener">Responsive Classroom</a>; <a href="https://sites.google.com/mausd.org/mausdstudentsupport/responsive-discipline/at-school" target="_blank" rel="noopener">MAUSD Responsive Discipline</a></p>
+
+  <h3 class="sub">Logical consequences</h3>
+  <p class="prose" style="margin-bottom:14px">Unlike punishment, logical consequences are <b>respectful, relevant, and realistic</b> (Ruth Charney's "three R's"). They focus on the behavior, not the child's character, and help the student fix the problem and learn from it. Responsive Classroom describes three types.</p>
+  <div class="grid g3">
+    <article class="strat">
+      <h4>You break it, you fix it</h4>
+      <p>The student repairs the harm, whether accidental or on purpose.</p>
+      <div class="ex"><b>Example</b>A student spills paint and helps clean it up. A student who hurt a friend's feelings helps make it right with an apology of action.</div>
+    </article>
+    <article class="strat">
+      <h4>Loss of privilege</h4>
+      <p>The student briefly loses a privilege directly connected to the behavior. It should be a privilege, not a need like recess or art.</p>
+      <div class="ex"><b>Example</b>A student waving scissors uses them only with the teacher nearby for the rest of art time.</div>
+    </article>
+    <article class="strat">
+      <h4>Take a break</h4>
+      <p>A short, positive time-out in a calm spot to regain self-control, then rejoin the group. It is not a punishment or banishment.</p>
+      <div class="ex"><b>Example</b>A student who keeps calling out during a game moves to the break chair for a minute, then returns when ready.</div>
+    </article>
+  </div>
+  <p class="src" style="margin-top:10px">Sources: <a href="https://www.responsiveclassroom.org/shared-practices/logical-consequences/" target="_blank" rel="noopener">Responsive Classroom, Logical Consequences</a>; <a href="https://www.educationworld.com/a_curr/columnists/charney/charney006.shtml" target="_blank" rel="noopener">Charney, The Three R's</a>; <a href="https://mybrightwheel.com/blog/logical-consequences" target="_blank" rel="noopener">brightwheel</a>; <a href="https://www.weareteachers.com/logical-consequences-in-the-classroom-2/" target="_blank" rel="noopener">WeAreTeachers</a></p>
+
+  <h3 class="sub">Keeping disciplined students from shutting down</h3>
+  <p class="prose" style="margin-bottom:14px">From the course slides. Discipline works best when the student keeps their dignity and the relationship stays intact.</p>
+  <div class="grid g3">
+    <div class="card"><h4>Respond privately</h4><ul class="clean"><li>Discipline privately when possible.</li><li>Address inappropriate behavior quickly.</li><li>Avoid punishing the whole class for a few students.</li><li>Have a space where a student can have private time.</li></ul></div>
+    <div class="card"><h4>Stay steady</h4><ul class="clean"><li>Remain neutral during conflicts.</li><li>Keep expectations consistent.</li><li>Model the behavior you want.</li><li>Remember that student dignity matters.</li></ul></div>
+    <div class="card"><h4>Look deeper</h4><ul class="clean"><li>Search for the root cause of the misbehavior.</li><li>Listen to students.</li><li>Create individual plans when needed.</li><li>Keep reinforcing appropriate behavior with praise.</li></ul></div>
+  </div>
+  <div class="extra" data-ch="misbehavior"></div>
+</section>
+
+<!-- 7 -->
+<section class="ch" id="respect">
+  <div class="ch-head"><span class="ch-num">7</span><h2>Disrespectful behavior</h2></div>
+  <div class="frogtip"><img src="img/praying.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Stay calm, keep it private, and focus on the behavior, not the child.</p></div>
+  <p class="ch-intro prose">Disrespect can feel personal, especially to a new teacher. Understanding where it comes from helps you respond calmly instead of reacting.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h4>Why it happens</h4>
+      <p class="muted" style="margin-bottom:10px">According to psychologist Tim Elmore:</p>
+      <ul class="clean">
+        <li>Unlike past generations, kids today are not conditioned to respect their elders.</li>
+        <li>Kids feel empowered by their exposure to information.</li>
+        <li>Kids do not see respect modeled or earned by older generations.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>What Elmore recommends</h4>
+      <ol class="steps" style="margin-top:10px">
+        <li><span>Live a life worthy of respect.</span></li>
+        <li><span>Ask questions and be kind.</span></li>
+        <li><span>Don't raise your voice unnecessarily.</span></li>
+        <li><span>Take the initiative to meet with them.</span></li>
+        <li><span>Demonstrate respect.</span></li>
+      </ol>
+    </div>
+  </div>
+  <h3 class="sub">A three-step response in your classroom</h3>
+  <div class="grid g3">
+    <div class="strat"><span class="tag">Step 1</span><h4>Set communication expectations</h4><p>Teach how people talk to each other in your room: tone, words, and listening.</p><div class="ex"><b>Example</b>Co-create a "How we disagree respectfully" chart with sentence frames like "I see it differently because..."</div></div>
+    <div class="strat"><span class="tag">Step 2</span><h4>Point out specific examples</h4><p>Name exactly what crossed the line, privately and calmly. Focus on the behavior, not the child.</p><div class="ex"><b>Example</b>"When you rolled your eyes and said 'whatever,' that was disrespectful. Try again: tell me what you need."</div></div>
+    <div class="strat"><span class="tag">Step 3</span><h4>Meet with the family and child</h4><p>If nothing changes, hold a meeting with the parents and the child together, so everyone hears the same message and plans next steps.</p></div>
+  </div>
+  <p class="src" style="margin-top:10px">Source: course slides; <a href="https://www.educationworld.com/a_curr/columnists/charney/charney007.shtml" target="_blank" rel="noopener">Charney, Examples of Logical Consequences</a></p>
+  <div class="extra" data-ch="respect"></div>
+</section>
+
+<!-- 8 -->
+<section class="ch" id="escalation">
+  <div class="ch-head"><span class="ch-num">8</span><h2>When behavior escalates</h2></div>
+  <div class="frogtip"><img src="img/umbrella.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>The more upset a student becomes, the calmer you need to be.</p></div>
+  <p class="ch-intro prose">Intense behavior usually builds through predictable phases, known as the acting-out cycle. The earlier you notice the signs, the more likely a calm response can bring the student back.</p>
+  <div class="cycle" aria-label="Acting-out cycle phases">
+    <div>Calm<small>on task</small></div>
+    <div>Trigger<small>a stressor</small></div>
+    <div class="mid">Agitation<small>off balance</small></div>
+    <div class="mid">Acceleration<small>engaging adult</small></div>
+    <div class="hot">Peak<small>most intense</small></div>
+    <div class="mid">De-escalation<small>winding down</small></div>
+    <div>Recovery<small>returning</small></div>
+  </div>
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag">Agitation</span>
+      <h4>Notice early and show empathy</h4>
+      <p>Look for signs like fidgeting, withdrawing, or sighing. Use supportive language, offer a short break or a choice, and move close in a calm way. Simple strategies at this point can often return the student to calm.</p>
+      <div class="ex"><b>Example</b>"This problem looks frustrating. Do you want to start with number 3 or take two minutes at the calm corner first?"</div>
+    </article>
+    <article class="strat">
+      <span class="tag">Acceleration and peak</span>
+      <h4>Stay calm and prioritize safety</h4>
+      <p>Speak in a calm voice and use few words. Give space and avoid power struggles. The more upset the student becomes, the calmer the adult needs to be. If anyone is in danger, focus on safety, remove the audience if needed, and follow your school's crisis plan.</p>
+    </article>
+    <article class="strat">
+      <span class="tag">De-escalation</span>
+      <h4>Restore calm with dignity</h4>
+      <p>The student may seem confused, withdraw, or blame others. Don't lecture yet. Restore calm to the classroom, continue the regular activity, and help the student rejoin with dignity.</p>
+    </article>
+    <article class="strat">
+      <span class="tag">Recovery</span>
+      <h4>Debrief briefly, later</h4>
+      <p>Once you and the student are both calm, hold a short private debrief of 3 to 5 minutes: what happened, what the student could do next time, and how to make things right. Debriefing too early can backfire.</p>
+    </article>
+  </div>
+  <p class="src" style="margin-top:10px">Sources: <a href="https://iris.peabody.vanderbilt.edu/module/bi1-elem/cresource/q2/p05/" target="_blank" rel="noopener">IRIS Center, Acting-Out Cycle</a> (<a href="https://iris.peabody.vanderbilt.edu/module/bi1-elem/cresource/q2/p07/" target="_blank" rel="noopener">Peak</a>, <a href="https://iris.peabody.vanderbilt.edu/module/bi1-elem/cresource/q2/p08" target="_blank" rel="noopener">De-escalation</a>, <a href="https://iris.peabody.vanderbilt.edu/?p=1064634" target="_blank" rel="noopener">Recovery</a>); <a href="https://dpi.wi.gov/node/108856" target="_blank" rel="noopener">Wisconsin DPI</a>; <a href="https://media.naset.com/uploads/2025/09/NASET-De-escalation_Strategies_for_the_Classroom-09.26.2025.pdf" target="_blank" rel="noopener">NASET</a></p>
+  <div class="callout" style="margin-top:16px">
+    <h4>If you don't have strong support staff</h4>
+    <p class="prose">One of the course questions asks what to do with extreme behavior when you lack a counselor or strong administration. As a student teacher, always follow your cooperating teacher's and school's safety procedures first. Know how to call the office or a nearby teacher for help while keeping other students supervised, write down what happened, communicate with the family, and ask for a consultation with the school psychologist, special education team, or district behavior specialist.</p>
+    <p class="src" style="margin-top:8px">See also: <a href="https://www.senya.app/resources/de-escalating-student-behaviors" target="_blank" rel="noopener">Senya, De-Escalating Student Behaviors</a></p>
+  </div>
+  <div class="extra" data-ch="escalation"></div>
+</section>
+
+<!-- 9 -->
+<section class="ch" id="restorative">
+  <div class="ch-head"><span class="ch-num">9</span><h2>Restorative practices</h2></div>
+  <div class="frogtip"><img src="img/hugging.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Build community first, then repair harm together.</p></div>
+  <p class="ch-intro prose">Restorative practices focus on relationships: building community before problems happen and repairing harm after. They work alongside PBIS and social-emotional learning, and they are not about letting students get away with things. Many elementary teachers already have a natural starting point in the morning meeting circle.</p>
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag">Proactive circle</span>
+      <h4>Build community first</h4>
+      <p>Students sit in a circle where everyone can see each other. Only the person holding a talking piece speaks. Begin with low-risk prompts so students get comfortable with the format.</p>
+      <div class="ex"><b>Example prompts</b>"Share one thing that made you smile today." "What helps you feel safe at school?" "What does being a kind classmate look like?"</div>
+    </article>
+    <article class="strat">
+      <span class="tag">Responsive circle or conversation</span>
+      <h4>Repair harm after a conflict</h4>
+      <p>Used for hurt feelings, exclusion, name-calling, or friendship problems. The goal is learning and repairing. Kid-friendly restorative questions include:</p>
+      <div class="ex"><b>Questions</b>What happened? What were you thinking or feeling? Who was affected, and how? What can we do to make it right?</div>
+    </article>
+  </div>
+  <p class="src" style="margin-top:10px">Sources: <a href="https://theresponsivecounselor.com/2020/04/restorative-practices-in-elementary-schools.html" target="_blank" rel="noopener">The Responsive Counselor</a>; <a href="https://sites.google.com/sandi.net/nhe-counseling-corner-alabanza/restorative-justice-approach" target="_blank" rel="noopener">San Diego Unified counseling page</a>; <a href="https://www.edutopia.org/article/restorative-justice-circles-elementary-classroom" target="_blank" rel="noopener">Edutopia, Talking Circles</a>; <a href="https://www.edutopia.org/article/circling-community-building" target="_blank" rel="noopener">Edutopia, Circling Up</a></p>
+  <div class="extra" data-ch="restorative"></div>
+</section>
+
+<!-- 10 -->
+<section class="ch" id="families">
+  <div class="ch-head"><span class="ch-num">10</span><h2>Working with families</h2></div>
+  <div class="frogtip"><img src="img/gift.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Make your first call home a good-news call.</p></div>
+  <p class="ch-intro prose">Families are your partners. When the first contact is positive, later conversations about problems go much more smoothly.</p>
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag">Research-based</span>
+      <h4>Make positive calls and emails home</h4>
+      <p>Researchers Matthew Kraft and Shaun Dougherty found that frequent teacher-family communication raised the odds of homework completion by about 40 percent and cut the times teachers had to redirect students by about 25 percent. A good-news call can take three minutes.</p>
+      <div class="ex"><b>Example</b>"Hi, this is Ms. Rivera, Ava's teacher. Nothing is wrong. I'm calling because Ava helped a new student find her way all day today, and I wanted you to know."</div>
+      <p class="src">Sources: <a href="https://www.edutopia.org/article/phone-call-home-makes-all-difference" target="_blank" rel="noopener">Edutopia, A Phone Call Home Makes All the Difference</a>; <a href="https://www.edutopia.org/blog/power-positive-phone-call-home-elena-aguilar" target="_blank" rel="noopener">Edutopia, The Power of the Positive Phone Call Home</a></p>
+    </article>
+    <article class="strat">
+      <span class="tag">Practical tips</span>
+      <h4>When the call is harder</h4>
+      <ul class="clean">
+        <li>Make sure your first contact with each family is positive.</li>
+        <li>Open by saying the child is safe, so the parent can listen instead of worry.</li>
+        <li>Describe what happened factually and share what you have already tried.</li>
+        <li>Ask for the family's perspective; they may know what helps at home.</li>
+        <li>If a pattern continues, meet with the parents and the child together.</li>
+        <li>Offer more than one way to communicate, since some parents can't take calls at work.</li>
+      </ul>
+      <p class="src">Sources: <a href="https://www.edutopia.org/article/tips-calling-parents-school/" target="_blank" rel="noopener">Edutopia, 6 Tips for Difficult Phone Calls</a>; <a href="https://teachthought.com/pedagogy/teachers-calling-home-bare-minimum-communicating-families" target="_blank" rel="noopener">TeachThought</a>; course slides</p>
+    </article>
+  </div>
+  <div class="extra" data-ch="families"></div>
+</section>
+
+<!-- 11 -->
+<section class="ch" id="field">
+  <div class="ch-head"><span class="ch-num">11</span><h2>From learning to practice</h2></div>
+  <div class="frogtip"><img src="img/camera.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Record yourself teaching. Video is a great coach.</p></div>
+  <p class="ch-intro prose">NCTQ's promising practices describe how strong teacher preparation programs build management skill: learn the Big Five, plan on paper, practice live, and get feedback. Here is how you can use that sequence during your own field experiences.</p>
+  <div class="grid g2">
+    <article class="strat">
+      <span class="tag">Observe with a focus</span>
+      <h4>What to look for in your placement</h4>
+      <p>Classrooms are full of action, and a general observation rarely focuses on anything. Go in with specific questions:</p>
+      <ul class="clean">
+        <li>How does the teacher teach and reinforce rules?</li>
+        <li>What routines are in place, and how are they cued?</li>
+        <li>What does praise sound like, and how often?</li>
+        <li>What happens right after a minor disruption?</li>
+        <li>How does the lesson keep students engaged and paced?</li>
+      </ul>
+    </article>
+    <article class="strat">
+      <span class="tag">Practice and feedback</span>
+      <h4>Make the most of student teaching</h4>
+      <ul class="clean">
+        <li>Ask to teach a routine yourself, not only content lessons.</li>
+        <li>Ask your cooperating teacher for detailed feedback on management.</li>
+        <li>Video a lesson and watch yourself: count positive and negative statements and check your pacing.</li>
+        <li>Look at the observation form you will be evaluated on, and practice each management item before you are observed.</li>
+        <li>Write a classroom management plan and classroom procedures, then test them in practice.</li>
+      </ul>
+    </article>
+  </div>
+  <p class="src" style="margin-top:10px">Source: NCTQ, <i>Promising Practices in Classroom Management Training</i>, including examples from Great Basin College, Western Washington University, and the University of Virginia.</p>
+</section>
+
+<!-- 12 -->
+<section class="ch" id="resources">
+  <div class="ch-head"><span class="ch-num">12</span><h2>Questions and resources</h2></div>
+  <div class="frogtip"><img src="img/planting.webp" alt="Frog Baby"><p class="bubble"><span class="who">Frog Baby tip</span>Keep growing. These free resources go deeper.</p></div>
+  <h3 style="margin-bottom:12px">Questions to keep thinking about</h3>
+  <div class="card" style="margin-bottom:28px">
+    <ol class="steps">
+      <li><span>Think about classrooms where you have been a student or observer. What framework created a positive, focused environment, and how did the teacher build it?</span></li>
+      <li><span>When do we just ignore behavior, and when do we address it?</span></li>
+      <li><span>How do you filter what students talk about in the classroom?</span></li>
+      <li><span>What do you do if you do not have a counselor or strong administration and you are dealing with extreme behavior?</span></li>
+      <li><span>How might a teacher's feedback unintentionally encourage a fixed mindset?</span></li>
+      <li><span>What is the difference between praising effort and praising effective learning strategies?</span></li>
+      <li><span>How can teachers encourage a growth mindset while keeping high academic expectations?</span></li>
+      <li><span>How might growth-mindset principles shape classroom assessment and grading?</span></li>
+    </ol>
+  </div>
+  <h3 style="margin-bottom:12px">Go deeper</h3>
+  <div class="res grid g2">
+    <a href="https://iris.peabody.vanderbilt.edu/module/bi2-elem/cresource/q1/p03" target="_blank" rel="noopener"><b>IRIS Center: Addressing Challenging Behaviors (Elementary)</b><span>Free modules with video examples of praise, precorrection, active supervision, OTR, and choice.</span></a>
+    <a href="https://iris.peabody.vanderbilt.edu/module/bi1-elem/cresource/q2/p05/" target="_blank" rel="noopener"><b>IRIS Center: Understanding the Acting-Out Cycle</b><span>What each phase looks like and what to do, with classroom videos.</span></a>
+    <a href="https://pbis.org/classroom-pbis" target="_blank" rel="noopener"><b>Center on PBIS: Classroom PBIS</b><span>The national center's overview of evidence-based classroom practices.</span></a>
+    <a href="https://files.eric.ed.gov/fulltext/ED619696.pdf" target="_blank" rel="noopener"><b>Supporting and Responding to Behavior (PDF)</b><span>Practical guide to classroom PBIS strategies with scenarios.</span></a>
+    <a href="https://www.responsiveclassroom.org/shared-practices/interactive-modeling/" target="_blank" rel="noopener"><b>Responsive Classroom</b><span>Elementary practices: Morning Meeting, Interactive Modeling, teacher language, logical consequences.</span></a>
+    <a href="https://vkc.vumc.org/assets/files/resources/psibehaviorspecpraise.pdf" target="_blank" rel="noopener"><b>Behavior-Specific Praise Tip Sheet (PDF)</b><span>Vanderbilt Kennedy Center guide with examples and non-examples.</span></a>
+    <a href="https://spedtex.tea.texas.gov/resources/behavior-specific-praise-elementary-school-example-and-non-example" target="_blank" rel="noopener"><b>Behavior-Specific Praise Video</b><span>Short elementary example and non-example.</span></a>
+    <a href="https://edutopia.org/article/small-but-impactful-classroom-management-shifts" target="_blank" rel="noopener"><b>Edutopia: 8 Small but Impactful Classroom Management Shifts</b><span>Research-backed tips on presence, nonverbal cues, and tone.</span></a>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <div class="in grid g2">
+    <div>
+      <h3>Core sources</h3>
+      <ul>
+        <li>Classroom Management and Discipline course slides.</li>
+        <li>Developing a Growth Mindset with Carol Dweck [Video]. YouTube. https://youtu.be/hiiEeMN7vbQ</li>
+        <li>National Council on Teacher Quality. <i>Training our future teachers: Classroom management. Promising practices in classroom management training.</i> nctq.org/teacherPrep</li>
+        <li>Simonsen, B., Fairbanks, S., Briesch, A., Myers, D., &amp; Sugai, G. (2008). Evidence-based practices in classroom management. <i>Education and Treatment of Children, 31</i>(3), 351-380.</li>
+        <li>Cook, C. R., Fiat, A., &amp; Larson, M. (2018). Positive greetings at the door. <i>Journal of Positive Behavior Interventions.</i></li>
+      </ul>
+    </div>
+    <div>
+      <div class="foot-frog"><img src="img/sleeping.webp" alt="Frog Baby napping on a lily pad"><div><h3>About the examples</h3>
+      <p>Classroom examples in the "Example" boxes illustrate how each strategy might sound in an elementary classroom. Strategy descriptions are summarized from the linked sources; follow the links for full guidance.</p></div></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('aside.toc a'));
+  var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  if(!('IntersectionObserver' in window))return;
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.remove('on');});var a=map[e.target.id];if(a)a.classList.add('on');}});
+  },{rootMargin:'-30% 0px -60% 0px'});
+  document.querySelectorAll('section.ch').forEach(function(s){io.observe(s);});
+})();
+</script>
+<script>
+(function(){
+var EX={
+rules:[
+ ['K-2','Picture rule chart','Each rule is posted with a photo of classmates doing it. During reminders, the teacher simply points to the photo.'],
+ ['K-2','Rule of the day','Each morning the class spotlights one rule, acts it out, and the teacher names examples of it all day.'],
+ ['3-5','Class constitution','Students draft rules in small groups, debate wording, vote, and sign. The class revisits it each quarter.'],
+ ['3-5','Looks like / sounds like chart','For "Be respectful in discussions," students list what it looks like (eyes on speaker) and sounds like (one voice at a time).'],
+ ['Any grade','Connect rules to moments','Before a field trip: "Which of our rules will help us most on the bus? Show me what that looks like."'],
+ ['Any grade','Refresh after breaks','After winter break, spend ten minutes reteaching each rule with a quick role play before lessons begin.']
+],
+routines:[
+ ['K-2','Call-and-response signal','"Class, class!" "Yes, yes!" Practiced five times on day one, then praised: "Everyone stopped and looked in two seconds."'],
+ ['K-2','Visual schedule','Picture cards show the day. A student helper moves the arrow at each transition so students know what comes next.'],
+ ['K-2','Clean-up song','A one-minute song plays at clean-up. The goal is to be seated on the rug before the song ends.'],
+ ['3-5','Morning entry slide','A slide on the board lists three steps: unpack, lunch choice, start the morning question.'],
+ ['3-5','Help cups','Green cup: I am fine. Yellow: I have a question but can keep working. Red: I am stuck. The teacher checks red cups first.'],
+ ['3-5','Classroom jobs','A weekly rotating chart (materials manager, line leader, tech helper) gives students ownership of routines.'],
+ ['Any grade','Countdown transitions','"In five, four, three, two, one, you will be at the rug with your book." The teacher praises those who arrive by one.']
+],
+praise:[
+ ['K-2','Specific and immediate','"Jasmine, you put the cap back on the marker so it won\'t dry out. That\'s taking care of our materials."'],
+ ['K-2','Class marble jar','The class earns a marble for specific whole-group behaviors ("Everyone was ready in 20 seconds"). A full jar earns a short celebration.'],
+ ['3-5','Private sticky note','A note left on a desk: "You stuck with that word problem for ten minutes. That\'s persistence."'],
+ ['3-5','Praise academic behavior','"Devon used evidence from the text to back up his answer. That makes his argument strong."'],
+ ['Any grade','Peer shout-out board','Students write specific shout-outs for classmates: "Leo helped me find my mistake in subtraction."'],
+ ['Any grade','Group praise with a record','"Row 2 was ready in 20 seconds. That\'s our class record."']
+],
+engagement:[
+ ['K-2','Elbow partners','After a question, students turn to their elbow partner with a frame: "I think ___ because ___."'],
+ ['K-2','Move to respond','"Stand up if the word has a short a. Stay seated if it doesn\'t." Everyone responds at once.'],
+ ['3-5','Mini whiteboards','"Solve it. One, two, three, show me." The teacher scans every answer in seconds.'],
+ ['3-5','Choice board','Spelling practice has nine options in a tic-tac-toe grid. Students choose three in a row.'],
+ ['3-5','Interest-based problems','Using an interest survey, the teacher writes word problems about students\' favorite sports, pets, and games.'],
+ ['Any grade','Mystery hook','A covered box or mystery bag opens a science unit. Students make predictions before the reveal.'],
+ ['Any grade','Think time before calling','"Think for ten seconds. Tell your partner. Now I will pull a name stick." Everyone has an answer ready.']
+],
+misbehavior:[
+ ['Proximity','Keep teaching, move closer','Two students whisper. The teacher continues the lesson while walking over and standing beside their desks. The whispering stops.'],
+ ['Planned ignoring and praise','Reward the right behavior','A student shouts "Teacher!" The teacher calls on a student with a raised hand, then calls on the first student as soon as his hand goes up.'],
+ ['Error correction','Brief and calm','"Sam, pencils stay on your desk. Thank you." The teacher walks away without waiting for an argument.'],
+ ['Reteach','Practice the routine again','After pushing in line, a small group practices lining up with the teacher for one minute before lunch.'],
+ ['Choice','Two acceptable options','"You can finish at your seat or at the back table. You decide."'],
+ ['Logical consequence','You break it, you fix it','A student who drew on his desk spends two minutes of recess cleaning it with a wipe.']
+],
+respect:[
+ ['Avoid power struggles','Step out of the argument','"I\'m not going to argue about this now. I\'ll check back with you in two minutes."'],
+ ['Private check-in','Curious, not angry','"That comment didn\'t sound like you. Is something going on today?"'],
+ ['Model respect','Own your mistakes','The teacher accidentally interrupts a student and says, "I\'m sorry, I cut you off. Please finish."'],
+ ['Name the behavior','Specific and calm','"When you talk while I\'m giving directions, others can\'t hear. Please wait until I finish."'],
+ ['Teach disagreement','Sentence frames','A posted chart: "I see it differently because..." and "Can you explain what you mean?"'],
+ ['Family partnership','Shared goal','Parents, child, and teacher agree on one goal and a weekly check-in sheet that goes home every Friday.']
+],
+escalation:[
+ ['Prevention','Know the triggers','A student often escalates during timed math tests. The teacher plans untimed practice and a quiet seat for him.'],
+ ['Agitation','Calm corner pass','"Do you want to use the calm corner for three minutes? The timer is there. Come back when you\'re ready."'],
+ ['Agitation','Helpful errand','"I can see you\'re frustrated. Could you take this folder to Mrs. Lee for me?" A short walk resets the moment.'],
+ ['Acceleration','Few words','Calm, low voice: "Put the book down. Come stand by the door with me."'],
+ ['Peak','Safety first','The teacher calmly moves the rest of the class to the reading area or hallway and calls the office for support.'],
+ ['Recovery','Short debrief','Later, privately: "What happened? What could you do next time? How can we make it right?"']
+],
+restorative:[
+ ['Community circle','Low-risk prompt','With a talking piece: "If you were a weather forecast today, what would you be?"'],
+ ['Problem-solving circle','Recurring issue','The class meets about crowding at the cubbies. Students propose a solution and try it for a week.'],
+ ['Affective statement','Share impact','"I feel frustrated when people talk during read-aloud because classmates can\'t hear the story."'],
+ ['Repair harm','Make it right','A student who knocked over a classmate\'s block tower helps rebuild it and asks how the classmate feels.'],
+ ['Conflict conversation','After recess','Two students take turns answering: What happened? How did it affect you? What do you need now?']
+],
+families:[
+ ['Before school starts','Welcome postcard','A short card mailed home: "I can\'t wait to meet you! Bring a photo of something you love for our first day."'],
+ ['All year','Good-news tracker','The teacher keeps a class list and sends one positive message per student each month, checking off names.'],
+ ['Concern call','Opening script','"Hi, this is Mr. Park, Mateo\'s teacher. Mateo is safe and fine. I\'m calling about something that happened at recess, and I\'d like your thoughts."'],
+ ['Language access','Families\' language','The teacher uses the school interpreter or translated messages in the family\'s home language.'],
+ ['Invite in','Join Morning Meeting','Families are invited to join a Morning Meeting so they see the classroom community firsthand.'],
+ ['Shared language','Newsletter','A monthly newsletter explains class routines and rules so families can use the same words at home.']
+]
+};
+var SC={
+rules:[
+ {s:'It is the first week in your 2nd-grade class, and students keep asking, "Are we allowed to do this?" What should you do first?',o:['Post a list of twelve rules that covers every possible situation.','Work with students to create three to five positively stated rules, then model and practice each one.','Wait until problems happen and make rules as they come up.','Use last year\'s teacher\'s rules without discussing them.'],b:[1],f:['Long lists are hard for young students to remember and follow. Keep rules few and broad.','Best choice. Few, positive, co-created rules that are modeled and practiced give students clear expectations and ownership.','Waiting makes rules feel like punishments after the fact. Teach expectations before problems happen.','Existing rules can be a start, but students follow rules better when they understand and help shape them.']},
+ {s:'A 3rd grader says, "That rule is dumb. Why do we have to walk inside?"',o:['"Because I said so."','"Rules are rules. Sit down."','Briefly explain the reason (everyone\'s safety), connect it to the rules the class created, and move on.','Drop the rule since students don\'t like it.'],b:[2],f:['This shuts down the conversation and models the kind of respect you don\'t want.','A curt response can feel dismissive and invite a power struggle.','Best choice. A calm explanation of the reason keeps the rule meaningful and models respect.','Rules exist for safety and learning. Consistency matters more than popularity.']},
+ {s:'It is January. After winter break, students have stopped raising their hands before speaking.',o:['Take away recess from the whole class.','Reteach the rule with a quick model and practice, then praise students who follow it.','Ignore it; they will remember on their own.','Add a new, stricter rule.'],b:[1],f:['Whole-class punishment frustrates students who did follow the rule.','Best choice. Rules need to be reviewed, retaught, and reinforced, especially after breaks.','Expectations fade without review. A short reteach saves time later.','The existing rule is fine; it needs reteaching, not replacing.']}
+],
+routines:[
+ {s:'Transitions from reading to math take eight minutes in your 1st-grade class.',o:['Say "Hurry up!" more often.','Teach the transition step by step with Interactive Modeling, practice it, and add a timer or song.','Avoid transitions by keeping students at their desks all day.','Give consequences to the slowest students.'],b:[1],f:['Urging students on doesn\'t teach them what to do.','Best choice. Transitions are routines; model, practice, and reinforce them like any lesson.','Movement and varied activities are important for young students. Teach the transition instead.','The problem is likely an untaught routine, not a few students.']},
+ {s:'Every day after recess, students come in loud and take a long time to settle.',o:['Precorrect at the door: state the three steps before entering, then praise students who follow them.','Stand silently at the front for as long as it takes.','Cancel recess.','Start teaching over the noise.'],b:[0],f:['Best choice. Precorrection targets the predictable problem time, and praise reinforces the right behavior.','Waiting can work once, but it loses instructional time and doesn\'t teach the routine.','Recess helps students focus later. Removing it rarely solves the problem.','Students learn that noise is acceptable, and many will miss the lesson.']},
+ {s:'Several 4th graders finish early and start distracting others.',o:['Give them more of the same worksheet.','Tell them to sit quietly and wait.','Post and teach an early-finisher menu with meaningful choices.','Let them use any website they want.'],b:[2],f:['Extra copies of the same work can feel like a penalty for finishing.','Waiting with nothing to do is when off-task behavior starts.','Best choice. A taught routine with meaningful options keeps early finishers learning.','Unstructured screen time is hard to monitor and may not support learning.']}
+],
+praise:[
+ {s:'Which statement is the most effective behavior-specific praise?',o:['"Good job, class!"','"Aiden, you\'re the best!"','"Aiden, you put your materials away without being reminded. That\'s being responsible."','"Thanks, Aiden."'],b:[2],f:['General praise doesn\'t tell anyone what was done well.','Praising the person rather than the behavior gives no information about what to repeat.','Best choice. It names the student, the behavior, and the expectation.','Polite, but it doesn\'t say what Aiden did.']},
+ {s:'A 5th grader looks embarrassed when you praise her loudly in front of the class.',o:['Keep praising publicly; she\'ll get used to it.','Stop praising her.','Switch to private praise, like a quiet comment or a sticky note.','Praise her more loudly so it sounds sincere.'],b:[2],f:['Older elementary students often prefer subtle praise. Ignoring her reaction can make praise feel like a punishment.','She still benefits from recognition; change how you deliver it.','Best choice. Match the delivery to the student\'s preference.','This would likely increase her discomfort.']},
+ {s:'You notice you have corrected one student five times this morning and praised him once.',o:['Keep correcting; he needs it.','Look for moments when he meets expectations and praise them specifically, aiming for more positives than corrections.','Send him to the office.','Praise him for everything, even things he did not do.'],b:[1],f:['A mostly negative pattern often makes behavior worse and harms the relationship.','Best choice. A ratio near four positives to one correction is recommended. Catch him being good.','This removes him from learning and doesn\'t teach the expected behavior.','Praise must be earned and specific to work.']}
+],
+engagement:[
+ {s:'During a whole-class review, only the same three students raise their hands.',o:['Keep calling on them since they know the answers.','Use whole-group responses, like whiteboards or thumbs up or down, so every student answers.','Stop asking questions.','Call on students who are not paying attention to catch them off guard.'],b:[1],f:['Most students stay passive, and you can\'t see who understands.','Best choice. Opportunities to respond for everyone keep students engaged and show you who needs help.','Questions are one of your best engagement tools.','Calling on students to catch them can embarrass them. If you cold call, give think time and partner talk first.']},
+ {s:'A student refuses to start a writing task he dislikes.',o:['Offer a structured choice: pick one of two topics, or start with a quick drawing plan.','Tell him he\'ll lose recess if he doesn\'t start.','Let him skip writing today.','Argue with him until he starts.'],b:[0],f:['Best choice. Choice making helps students who avoid non-preferred tasks get started.','Threats can escalate refusal and don\'t address why he is stuck.','Skipping teaches that refusing works.','Arguing creates a power struggle.']},
+ {s:'Your 2nd graders are restless 25 minutes into the lesson.',o:['Keep going; there\'s a lot to cover.','Add a quick movement break or turn-and-talk, then vary the activity.','Raise your voice to get their attention.','Assign extra homework.'],b:[1],f:['Restless students aren\'t learning much. A short change saves time.','Best choice. Varying your approach and adding active responses re-engages young learners.','A louder voice may work briefly but raises tension.','Homework won\'t change what is happening right now.']}
+],
+misbehavior:[
+ {s:'During independent work, a student quietly hums while working. No one seems bothered.',o:['Let it go or use a quiet nonverbal cue.','Stop the class to address it.','Send the student out of the room.','Give a logical consequence.'],b:[0],f:['Best choice. The behavior is minor and the student is on task. Use the least intrusive response.','This interrupts everyone for a behavior that wasn\'t disrupting learning.','Far too strong. The student loses learning time.','Consequences are for behavior that needs correcting. This one may not.']},
+ {s:'Two students whisper while you give directions to the whole class.',o:['Stop and lecture the whole class.','Walk toward them and make eye contact while you keep talking.','Ignore it completely.','Move their seats permanently right away.'],b:[1],f:['A lecture punishes everyone and loses momentum.','Best choice. Proximity and a nonverbal cue redirect without stopping instruction.','They are missing directions, and others notice. A light response is needed.','Start with less intrusive steps. Seat changes can come later if the pattern continues.']},
+ {s:'A student writes on his desk with a marker.',o:['Have him clean the desk.','Take away art for a week.','Correct him loudly in front of the class.','Ignore it.'],b:[0],f:['Best choice. "You break it, you fix it" is respectful, relevant, and realistic.','The consequence is unrelated and too long, so it feels like punishment.','Public correction can embarrass him and damage the relationship.','Damage to property needs a response.']},
+ {s:'A student keeps calling out even after a nonverbal cue and a quiet reminder.',o:['Keep ignoring it no matter what.','Give a brief private correction, reteach hand-raising, and praise him when he raises his hand.','Take away recess from the whole class.','Reprimand him in front of everyone.'],b:[1],f:['Ignoring has not worked, and others are affected. Move up the continuum.','Best choice. Correct briefly, reteach, and reinforce the right behavior when it appears.','Group consequences are unfair to students who followed the rule.','Public reprimands can escalate behavior and cost dignity.']}
+],
+respect:[
+ {s:'A student rolls her eyes and says "Whatever" when you give directions.',o:['Respond with sarcasm.','Calmly and privately name the behavior and ask her to try again respectfully.','Ignore it and hope it stops.','Call the principal immediately.'],b:[1],f:['Sarcasm models disrespect and escalates the situation.','Best choice. Point out the specific behavior, privately, and give a chance to fix it.','Disrespect left unaddressed tends to grow.','Save administrator involvement for serious or repeated behavior.']},
+ {s:'A student argues loudly with you in front of the class about a consequence.',o:['Argue back until you win.','Say calmly, "I hear you. We\'ll talk about it at the break," and continue teaching.','Change the consequence to end the argument.','Raise your voice to regain control.'],b:[1],f:['Public arguments become power struggles that no one wins.','Best choice. Stay calm, remove the audience by delaying the talk, and keep teaching.','Changing it under pressure teaches that arguing works.','Raising your voice usually escalates the situation.']},
+ {s:'After several weeks of clear expectations and private conversations, a student continues to speak disrespectfully.',o:['Meet with the parents and the child together to plan next steps.','Give up on the issue.','Keep repeating the same warning.','Discuss the child with other parents.'],b:[0],f:['Best choice. A joint meeting puts everyone on the same page with shared goals.','The student needs support to change. Don\'t give up.','A strategy that isn\'t working needs to change.','This violates the student\'s privacy and professional ethics.']}
+],
+escalation:[
+ {s:'A student who usually enjoys math is sighing, tapping, and crumpling paper during a timed test.',o:['Ignore it until it gets worse.','Quietly show empathy and offer a short break or a choice.','Announce to the class that she needs to focus.','Remind everyone how little time is left.'],b:[1],f:['These are signs of agitation. This is the best time to step in.','Best choice. Simple, supportive moves during agitation can return a student to calm.','Calling her out publicly can trigger escalation.','More time pressure adds to the stress.']},
+ {s:'A student is yelling and throws a book on the floor.',o:['Lecture loudly about respect.','Stay calm, use few words, give space, and make sure others are safe. Call for help if needed.','Physically grab the student\'s arm.','Tell the class to watch what happens when you misbehave.'],b:[1],f:['A student at the peak cannot process a lecture. It can escalate things further.','Best choice. During the peak, safety and calm come first.','Physical contact without training can escalate the situation and cause harm. Follow your school\'s crisis plan.','This humiliates the student and is never appropriate.']},
+ {s:'Five minutes after an outburst, the student has calmed down.',o:['Immediately discuss everything in detail.','Let the student rejoin the activity, then hold a short private debrief once you are both calm.','Pretend nothing happened, forever.','Review what happened with the whole class.'],b:[1],f:['Debriefing too early can restart the cycle.','Best choice. Reintegrate with dignity, then debrief briefly in private.','The student needs a chance to reflect and plan for next time.','Public review costs the student dignity and privacy.']}
+],
+restorative:[
+ {s:'At recess, two students fight over a ball, and one is crying.',o:['Ban the ball.','Use restorative questions with both: what happened, who was affected, and how to make it right.','Give both the same consequence without talking.','Tell them to say sorry and move on.'],b:[1],f:['This punishes everyone and doesn\'t help the two students solve the problem.','Best choice. Restorative questions help both students understand the harm and repair it.','Students don\'t learn what went wrong or how to fix it.','A forced apology often isn\'t sincere and doesn\'t repair the relationship.']},
+ {s:'You want to start using circles in your 3rd-grade class. What is the best first step?',o:['Use the first circle to address a serious conflict.','Start with fun, low-risk community circles so students learn the format.','Make participation optional and unstructured.','Let students speak in any order without a talking piece.'],b:[1],f:['Students need to know the format and trust each other before tackling conflict.','Best choice. Begin with community building, then use circles for problem solving later.','Circles need clear structure to feel safe.','A talking piece helps everyone get a turn and be heard.']},
+ {s:'A kindergartner knocks down a classmate\'s block tower on purpose.',o:['Have the student help rebuild it and check in with the classmate.','Use a time-out with no discussion.','Ban the student from the block center for a month.','Ignore it.'],b:[0],f:['Best choice. Repairing the harm teaches responsibility and empathy.','A time-out alone doesn\'t help the student understand or repair the harm.','Too long and unrelated to repair. Short, connected consequences work better.','The classmate was harmed. Ignoring it sends the wrong message.']}
+],
+families:[
+ {s:'It is the first week of school. When should your first contact with each family be?',o:['Only when there is a problem.','Early and positive, like a welcome note or a good-news call.','At October conferences.','Never; the office handles that.'],b:[1],f:['If the first contact is about a problem, families may feel blamed.','Best choice. A positive first contact builds trust for any harder conversations later.','Waiting months misses the chance to build a partnership early.','Teachers are the main link between the classroom and home.']},
+ {s:'You need to call a parent about a playground incident.',o:['Start by explaining what the child did wrong.','Open by saying the child is safe, describe the facts, share what you have tried, and ask for the parent\'s perspective.','Send a short, vague email.','Wait until conferences.'],b:[1],f:['Starting with blame can make parents defensive.','Best choice. Reassure first, stay factual, and invite partnership.','Vague messages cause worry and confusion.','Families should hear about incidents promptly.']},
+ {s:'A parent can\'t take calls during work hours and prefers to communicate in Spanish.',o:['Keep calling at noon.','Use the family\'s preferred method, such as text or an app, with a school interpreter or translated message.','Communicate only through the child.','Stop trying to communicate.'],b:[1],f:['This ignores what the family told you.','Best choice. Meet families where they are, in their language.','Children should not carry adult messages or interpret about their own behavior.','Every family deserves communication from the teacher.']}
+]
+};
+var L=['A','B','C','D'];
+/* Spread best answers evenly across A to D (7 each over 28 scenarios). */
+var POS=[2,0,3, 1,3,0, 3,2,1, 0,1,3, 2,0,3,1, 2,1,0, 3,0,2, 3,2,1, 0,1,2];
+var ORDER=['rules','routines','praise','engagement','misbehavior','respect','escalation','restorative','families'];
+var pi=0;
+ORDER.forEach(function(ch){(SC[ch]||[]).forEach(function(q){
+  var best=q.b[0],t=POS[pi++],o=[],f=[];
+  for(var k=0;k<4;k++){var src=(k===t)?best:(k===best?t:k);o[k]=q.o[src];f[k]=q.f[src];}
+  q.o=o;q.f=f;q.b=[t];
+});});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+document.querySelectorAll('.extra').forEach(function(box){
+  var ch=box.getAttribute('data-ch');var ex=EX[ch]||[],sc=SC[ch]||[];
+  var h='<h3 class="sub">More examples</h3><div class="grid g3 exgrid">';
+  ex.forEach(function(e){h+='<div class="excard"><span class="tag">'+esc(e[0])+'</span><h4>'+esc(e[1])+'</h4><p>'+esc(e[2])+'</p></div>';});
+  h+='</div><div class="practice"><div class="prhead"><div class="prtitle"><img src="img/hearts.webp" alt="" class="prfrog"><h3>Practice: choose the best response</h3></div><span class="prscore" aria-live="polite">0 of '+sc.length+' answered</span></div><p class="muted" style="margin-bottom:14px">Read each situation and choose what you would do. Feedback explains why each choice works or does not.</p><div class="grid g2 scgrid"></div></div>';
+  box.innerHTML=h;
+  var grid=box.querySelector('.scgrid'),score=box.querySelector('.prscore');var ans={};
+  function upd(){var n=0,r=0;for(var k in ans){n++;if(sc[k].b.indexOf(ans[k])>=0)r++;}score.textContent=n<sc.length?(n+' of '+sc.length+' answered'):('Best response chosen on '+r+' of '+sc.length);}
+  sc.forEach(function(q,i){
+    var c=document.createElement('div');c.className='scn';
+    c.innerHTML='<span class="tag">Scenario '+(i+1)+'</span><p class="q">'+esc(q.s)+'</p><div class="opts"></div><div class="fb" role="status"></div>';
+    var opts=c.querySelector('.opts'),fb=c.querySelector('.fb');
+    q.o.forEach(function(t,j){
+      var b=document.createElement('button');b.type='button';b.className='opt';
+      b.innerHTML='<span class="ol">'+L[j]+'</span><span>'+esc(t)+'</span>';
+      b.addEventListener('click',function(){
+        ans[i]=j;
+        opts.querySelectorAll('.opt').forEach(function(x,k){x.classList.remove('ok','no','best');if(k===j)x.classList.add(q.b.indexOf(j)>=0?'ok':'no');else if(q.b.indexOf(k)>=0&&q.b.indexOf(j)<0)x.classList.add('best');});
+        var good=q.b.indexOf(j)>=0;fb.className='fb show '+(good?'ok':'no');
+        fb.innerHTML='<img class="fbfrog" src="img/'+(good?'cheer':'surprised')+'.webp" alt=""><div><b>'+(good?'Good thinking. ':'Think again. ')+'</b>'+esc(q.f[j])+(good?'':' <span class="hint">The best response is highlighted.</span>')+'</div>';
+        upd();
+      });
+      opts.appendChild(b);
+    });
+    grid.appendChild(c);
+  });
+});
+})();
+
+</script>
+</body>
+</html>
